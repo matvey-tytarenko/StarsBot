@@ -75,5 +75,53 @@ async def support_donate(message: Message, l10n: FluentLocalization):
     await message.answer(l10n.format_value("donate-paysupport-message"))
 
 @router.message(Command("refunds"))
-async def cmd_refunds(message: Message, l10n: FluentLocalization):
-    pass
+async def cmd_refunds(message: Message, bot: Bot, command: CommandObject, l10n: FluentLocalization):
+    # ID Transactions for refunds
+    t_id = command.args
+
+    if t_id is None:
+        await message.answer(l10n.format_value("donate-refund-input-error"))
+        return
+
+    # try make refund
+    try:
+        pass
+    except TelegramBadRequest as e:
+        error = l10n.format_value("donate-refund-code-not-found")
+
+        if "CHARGE_ALREADY_REFUNDED" in e.message:
+            error = l10n.format_value("donate-refund-already-refunded")
+
+        await message.answer(error)
+        return
+
+@router.pre_checkout_query()
+async def pre_checkout_query(query: PreCheckoutQuery, l10n: FluentLocalization):
+    # If we are sell items and answearing OK
+    await query.answer(ok=True)
+
+    # If we are not found item answearing not found
+    # await query.answer(
+    #     ok=False,
+    #     error_message="Item is not found!"
+    # )
+
+@router.message(F.successfull_payment)
+async def successfull_payment(message: Message, l10n: FluentLocalization):
+    # payment SuccessFully Function
+    await message.answer(
+        l10n.format_value(
+            "donate-successful-payment",
+            {"t_id": message.successful_payment.telegram_payment_charge_id}
+        ),
+
+        # Add Message Effect
+        message_effect_id="5104841245755180586",
+        
+        # fire - 5104841245755180586
+        # like - 5107584321108051014
+        # dislike - 5104858069142078462
+        # hearts - 5159385139981059251
+        # party - 5046509860389126442 
+        # poop - 5046589136895476101
+    )
